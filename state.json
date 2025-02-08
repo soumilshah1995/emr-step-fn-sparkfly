@@ -1,0 +1,69 @@
+{
+  "Comment": "EMR Cluster Management with Step Execution",
+  "StartAt": "Create EMR Cluster",
+  "States": {
+    "Create EMR Cluster": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:createCluster.sync",
+      "Parameters": {
+        "Name.$": "$.ClusterName",
+        "ReleaseLabel.$": "$.ReleaseLabel",
+        "Applications.$": "$.Applications",
+        "ServiceRole.$": "$.ServiceRole",
+        "JobFlowRole.$": "$.JobFlowRole",
+        "LogUri.$": "$.LogUri",
+        "Instances.$": "$.Instances",
+        "BootstrapActions.$": "$.BootstrapActions"
+      },
+      "ResultPath": "$.ClusterDetails",
+      "Next": "Run EMR Step",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "FailState"
+        }
+      ]
+    },
+    "Run EMR Step": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
+      "Parameters": {
+        "ClusterId.$": "$.ClusterDetails.ClusterId",
+        "Step": {
+          "Name.$": "$.EMRSteps.Name",
+          "ActionOnFailure": "CONTINUE",
+          "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+            "Args.$": "$.EMRSteps.HadoopJarStep.Args"
+          }
+        }
+      },
+      "ResultPath": "$.StepResult",
+      "Next": "Terminate EMR Cluster",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "FailState"
+        }
+      ]
+    },
+    "FailState": {
+      "Type": "Pass",
+      "Result": "EMR job failed!",
+      "ResultPath": "$.ExecutionResult",
+      "Next": "Terminate EMR Cluster"
+    },
+    "Terminate EMR Cluster": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:terminateCluster.sync",
+      "Parameters": {
+        "ClusterId.$": "$.ClusterDetails.ClusterId"
+      },
+      "End": true
+    }
+  }
+}

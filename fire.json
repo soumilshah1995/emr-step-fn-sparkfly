@@ -1,0 +1,43 @@
+{
+  "ClusterName": "MyEMRCluster",
+  "ReleaseLabel": "emr-7.5.0",
+  "Applications": [
+    {
+      "Name": "Spark"
+    }
+  ],
+  "ServiceRole": "EMR_DefaultRole",
+  "JobFlowRole": "EMR_EC2_DefaultRole",
+  "LogUri": "s3://sXXX/logs/",
+  "Instances": {
+    "InstanceGroups": [
+      {
+        "Name": "Master nodes",
+        "Market": "ON_DEMAND",
+        "InstanceRole": "MASTER",
+        "InstanceType": "m5.xlarge",
+        "InstanceCount": 1
+      }
+    ],
+    "KeepJobFlowAliveWhenNoSteps": true,
+    "TerminationProtected": false
+  },
+  "BootstrapActions": [
+    {
+      "Name": "Install dependencies",
+      "ScriptBootstrapAction": {
+        "Path": "s3://XX/scripts/bootstrap.sh"
+      }
+    }
+  ],
+  "EMRSteps": {
+    "Name": "Run Spark Job",
+    "HadoopJarStep": {
+      "Jar": "command-runner.jar",
+      "Args": [
+        "spark-submit",
+        "s3://XXX/scripts/test_job.py"
+      ]
+    }
+  }
+}
