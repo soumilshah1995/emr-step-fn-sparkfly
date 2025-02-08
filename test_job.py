@@ -21,7 +21,7 @@ schema = StructType([
 print("Schema defined successfully.")
 
 # Read the JSON data from S3
-df = spark.read.parquet("s3://soumil-dev-bucket-1995/raw/", schema=schema)
+df = spark.read.parquet("s3://XX/raw/", schema=schema)
 
 print("parquet data read from S3 successfully.")
 
@@ -46,7 +46,7 @@ result_df.show(truncate=False)
 
 print("Result DataFrame displayed successfully.")
 
-path = "s3://soumil-dev-bucket-1995/output/"
+path = "s3://XX/output/"
 
 # Write the result DataFrame to a Parquet file
 result_df.write.parquet(path, mode="overwrite")
